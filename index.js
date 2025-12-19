@@ -10,23 +10,25 @@ connectDB();
 
 /* ---- CORS CONFIG ---- */
 const allowedOrigins = [
-  "https://fliperlabfrontend.vercel.app", // new main frontend
-  "https://fliperlabfrontend-mmj610th6-sujal-ambeldkars-projects.vercel.app", // old preview
+  "https://fliperlabfrontend.vercel.app", // main frontend
+  "https://fliperlabfrontend-mmj610th6-sujal-ambeldkars-projects.vercel.app", // preview
   "http://localhost:5173",
-  "http://localhost:3000"
+  "http://localhost:3000",
 ];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // Postman / server-to-server
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error("Not allowed by CORS"));
-    },
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: false
-  })
-);
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // Postman / server-to-server
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: false,
+};
+
+// apply CORS to all routes + preflight
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 /* ---------------------- */
 
 app.use(express.json());
@@ -44,15 +46,15 @@ app.get("/health", (req, res) => {
   res.json({
     status: "OK",
     uptime: process.uptime(),
-    timestamp: new Date()
+    timestamp: new Date(),
   });
 });
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error("GLOBAL ERROR:", err);
   res.status(500).json({
     success: false,
-    message: err.message || "Internal Server Error"
+    message: err.message || "Internal Server Error",
   });
 });
 
