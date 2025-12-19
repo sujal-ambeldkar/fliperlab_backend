@@ -8,23 +8,28 @@ dotenv.config();
 const app = express();
 connectDB();
 
-/* ---- CORS CONFIG (simple) ---- */
+/* ---- CORS CONFIG ---- */
 const allowedOrigins = [
-  "https://fliperlabfrontend.vercel.app", // main frontend
-  "https://fliperlabfrontend-mmj610th6-sujal-ambeldkars-projects.vercel.app", // preview
+  "https://fliperlabfrontend.vercel.app",
+  "https://fliperlabfrontend-mmj610th6-sujal-ambeldkars-projects.vercel.app",
   "http://localhost:5173",
   "http://localhost:3000"
 ];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // Postman / server-to-server
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error("Not allowed by CORS: " + origin));
-    }
-  })
-);
+const corsOptions = {
+  origin: (origin, callback) => {
+    console.log("CORS origin:", origin);
+    if (!origin) return callback(null, true); // Postman / server-to-server
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error("Not allowed by CORS: " + origin));
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: false
+};
+
+app.use(cors(corsOptions));
+// handle preflight for all routes (safe regex, not "*")
+app.options(/.*/, cors(corsOptions));
 /* ---------------------- */
 
 app.use(express.json());
