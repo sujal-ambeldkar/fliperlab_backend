@@ -26,9 +26,12 @@ const corsOptions = {
   credentials: false,
 };
 
-// apply CORS to all routes + preflight
+// apply CORS to all routes
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+
+// ✅ handle preflight for API routes (avoid "*")
+app.options("/api/*", cors(corsOptions));
+
 /* ---------------------- */
 
 app.use(express.json());
