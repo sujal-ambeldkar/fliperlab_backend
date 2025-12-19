@@ -8,30 +8,23 @@ dotenv.config();
 const app = express();
 connectDB();
 
-/* ---- CORS CONFIG ---- */
+/* ---- CORS CONFIG (simple) ---- */
 const allowedOrigins = [
   "https://fliperlabfrontend.vercel.app", // main frontend
   "https://fliperlabfrontend-mmj610th6-sujal-ambeldkars-projects.vercel.app", // preview
   "http://localhost:5173",
-  "http://localhost:3000",
+  "http://localhost:3000"
 ];
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // Postman / server-to-server
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error("Not allowed by CORS"));
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: false,
-};
-
-// apply CORS to all routes
-app.use(cors(corsOptions));
-
-// ✅ handle preflight for API routes (avoid "*")
-app.options("/api/*", cors(corsOptions));
-
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // Postman / server-to-server
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS: " + origin));
+    }
+  })
+);
 /* ---------------------- */
 
 app.use(express.json());
@@ -49,7 +42,7 @@ app.get("/health", (req, res) => {
   res.json({
     status: "OK",
     uptime: process.uptime(),
-    timestamp: new Date(),
+    timestamp: new Date()
   });
 });
 
@@ -57,7 +50,7 @@ app.use((err, req, res, next) => {
   console.error("GLOBAL ERROR:", err);
   res.status(500).json({
     success: false,
-    message: err.message || "Internal Server Error",
+    message: err.message || "Internal Server Error"
   });
 });
 
