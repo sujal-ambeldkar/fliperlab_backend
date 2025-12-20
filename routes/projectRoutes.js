@@ -2,24 +2,38 @@ const express = require("express");
 const Project = require("../models/project");
 const router = express.Router();
 
-// GET all projects
-router.get("/", async (req, res, next) => {
+// ----------------- GET all projects -----------------
+router.get("/", async (req, res) => {
   try {
+    console.log("GET /projects called");
+
     const projects = await Project.find().sort({ createdAt: -1 });
-    res.json({ success: true, data: projects });
+
+    // Return empty array if no projects
+    res.json({ success: true, data: projects || [] });
   } catch (err) {
-    next(err);
+    console.error("PROJECT GET ERROR:", err);
+    res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
 });
 
-// CREATE project (JSON body)
-router.post("/", async (req, res, next) => {
+// ----------------- CREATE project -----------------
+router.post("/", async (req, res) => {
   try {
-    const { title, description, imageUrl } = req.body; // imageUrl is just a string if you need it
-    const project = await Project.create({ title, description, imageUrl });
+    const { name, description, imageUrl } = req.body;
+
+    // Validate required fields
+    if (!name || !description || !imageUrl) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+
+    // Create new project
+    const project = await Project.create({ name, description, imageUrl });
+
     res.status(201).json({ success: true, data: project });
   } catch (err) {
-    next(err);
+    console.error("PROJECT CREATE ERROR:", err);
+    res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
 });
 
