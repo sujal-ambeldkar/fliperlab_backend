@@ -1,5 +1,5 @@
 const express = require("express");
-const Client = require("../models/Client");
+const Client = require("../models/client");
 const router = express.Router();
 
 // GET all clients
