@@ -8,7 +8,7 @@ dotenv.config();
 const app = express();
 connectDB();
 
-/* ---- CORS CONFIG ---- */
+/* --------- CORS CONFIG (FIXED) --------- */
 const allowedOrigins = [
   "https://fliperlabfrontend.vercel.app",
   "https://fliperlabfrontend-mmj610th6-sujal-ambeldkars-projects.vercel.app",
@@ -16,24 +16,28 @@ const allowedOrigins = [
   "http://localhost:3000"
 ];
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    console.log("CORS origin:", origin);
-    if (!origin) return callback(null, true); // Postman / server-to-server
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error("Not allowed by CORS: " + origin));
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (Postman, Railway health checks)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(null, false); // ❌ don't throw error
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: false
-};
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 
-app.use(cors(corsOptions));
-// handle preflight for all routes (safe regex, not "*")
-app.options(/.*/, cors(corsOptions));
-/* ---------------------- */
+// Preflight requests
+app.options("*", cors());
+/* -------------------------------------- */
 
 app.use(express.json());
 
+/* --------- ROUTES --------- */
 app.use("/api/v1/projects", require("./routes/projectRoutes"));
 app.use("/api/v1/clients", require("./routes/clientRoutes"));
 app.use("/api/v1/contacts", require("./routes/contactRoutes"));
@@ -51,6 +55,7 @@ app.get("/health", (req, res) => {
   });
 });
 
+/* --------- GLOBAL ERROR HANDLER --------- */
 app.use((err, req, res, next) => {
   console.error("GLOBAL ERROR:", err);
   res.status(500).json({
@@ -61,5 +66,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(` Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
