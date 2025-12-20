@@ -8,7 +8,7 @@ dotenv.config();
 const app = express();
 connectDB();
 
-/* ---- CORS CONFIG (FIXED) ---- */
+/* ---- SAFE CORS CONFIG (NO CRASH) ---- */
 const allowedOrigins = [
   "https://fliperlabfrontend.vercel.app",
   "https://fliperlabfrontend-mmj610th6-sujal-ambeldkars-projects.vercel.app",
@@ -17,21 +17,16 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: (origin, callback) => {
-    console.log("CORS origin:", origin);
-
-    // allow server-to-server / Railway health checks
+  origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-
-    return callback(null, false); // ❗ do NOT throw error
+    return callback(null, false);
   },
   methods: ["GET", "POST", "PUT", "DELETE"],
 }));
-/* ---------------------------- */
+/* ----------------------------------- */
 
 app.use(express.json());
 
@@ -54,5 +49,5 @@ app.get("/health", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
