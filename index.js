@@ -8,25 +8,21 @@ dotenv.config();
 const app = express();
 connectDB();
 
-/* ---- SAFE CORS CONFIG (NO CRASH) ---- */
-const allowedOrigins = [
-  "https://fliperlabfrontend.vercel.app",
-  "https://fliperlabfrontend-mmj610th6-sujal-ambeldkars-projects.vercel.app",
-  "http://localhost:5173",
-  "http://localhost:3000"
-];
-
+/* ===== FINAL CORS FIX ===== */
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(null, false);
-  },
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: "https://fliperlabfrontend.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
-/* ----------------------------------- */
+
+// Explicitly handle preflight
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
+/* ========================== */
 
 app.use(express.json());
 
@@ -37,14 +33,6 @@ app.use("/api/v1/subscriptions", require("./routes/subscriptionRoutes"));
 
 app.get("/", (req, res) => {
   res.send("Fliperlab Agency Backend is Running 🚀");
-});
-
-app.get("/health", (req, res) => {
-  res.json({
-    status: "OK",
-    uptime: process.uptime(),
-    timestamp: new Date()
-  });
 });
 
 const PORT = process.env.PORT || 5000;
