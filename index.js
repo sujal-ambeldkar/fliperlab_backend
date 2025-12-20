@@ -8,7 +8,7 @@ dotenv.config();
 const app = express();
 connectDB();
 
-/* --------- CORS CONFIG (FIXED) --------- */
+/* ---- CORS CONFIG (FIXED) ---- */
 const allowedOrigins = [
   "https://fliperlabfrontend.vercel.app",
   "https://fliperlabfrontend-mmj610th6-sujal-ambeldkars-projects.vercel.app",
@@ -17,27 +17,17 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (Postman, Railway health checks)
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-    return callback(null, false); // ❌ don't throw error
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // Postman / server-side
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(null, false); // ❗ don't throw error
   },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
 }));
-
-// Preflight requests
-app.options("*", cors());
-/* -------------------------------------- */
+/* ----------------------------- */
 
 app.use(express.json());
 
-/* --------- ROUTES --------- */
 app.use("/api/v1/projects", require("./routes/projectRoutes"));
 app.use("/api/v1/clients", require("./routes/clientRoutes"));
 app.use("/api/v1/contacts", require("./routes/contactRoutes"));
@@ -55,7 +45,7 @@ app.get("/health", (req, res) => {
   });
 });
 
-/* --------- GLOBAL ERROR HANDLER --------- */
+// Global error handler (safe)
 app.use((err, req, res, next) => {
   console.error("GLOBAL ERROR:", err);
   res.status(500).json({
@@ -66,5 +56,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(` Server running on port ${PORT}`);
 });
