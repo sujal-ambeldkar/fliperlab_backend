@@ -8,7 +8,7 @@ dotenv.config();
 const app = express();
 connectDB();
 
-/* ---- CORS CONFIG (SAFE) ---- */
+/* ---- CORS CONFIG (FIXED) ---- */
 const allowedOrigins = [
   "https://fliperlabfrontend.vercel.app",
   "https://fliperlabfrontend-mmj610th6-sujal-ambeldkars-projects.vercel.app",
@@ -17,14 +17,19 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
+  origin: (origin, callback) => {
     console.log("CORS origin:", origin);
-    if (!origin) return callback(null, true); // Postman / server-to-server
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error("Not allowed by CORS"));
+
+    // allow server-to-server / Railway health checks
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(null, false); // ❗ do NOT throw error
   },
   methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: false
 }));
 /* ---------------------------- */
 
@@ -44,15 +49,6 @@ app.get("/health", (req, res) => {
     status: "OK",
     uptime: process.uptime(),
     timestamp: new Date()
-  });
-});
-
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error("GLOBAL ERROR:", err.message);
-  res.status(500).json({
-    success: false,
-    message: err.message || "Internal Server Error"
   });
 });
 
