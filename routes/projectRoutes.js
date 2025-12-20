@@ -8,8 +8,8 @@ router.get("/", async (req, res) => {
     console.log("GET /projects called");
 
     const projects = await Project.find().sort({ createdAt: -1 });
+    console.log("Projects fetched:", projects.length);
 
-    // Return empty array if no projects
     res.json({ success: true, data: projects || [] });
   } catch (err) {
     console.error("PROJECT GET ERROR:", err);
@@ -22,14 +22,11 @@ router.post("/", async (req, res) => {
   try {
     const { name, description, imageUrl } = req.body;
 
-    // Validate required fields
     if (!name || !description || !imageUrl) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
-    // Create new project
     const project = await Project.create({ name, description, imageUrl });
-
     res.status(201).json({ success: true, data: project });
   } catch (err) {
     console.error("PROJECT CREATE ERROR:", err);
